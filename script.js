@@ -7,7 +7,7 @@ const canvas = document.getElementsByTagName('canvas')[0];
 resizeCanvas();
 
 let config = {
-    DYE_RESOLUTION: 1024,
+    DYE_RESOLUTION: 512,
     PAUSED: false,
     BACK_COLOR: { r: 0, g: 0, b: 0 },
     TRANSPARENT: false,
@@ -321,7 +321,7 @@ function initFramebuffers () {
     const rg      = ext.formatRG;
     const r       = ext.formatR;
     gl.disable(gl.BLEND);
-        dye = createDoubleFBO(canvas.width, canvas.height, rgba.internalFormat, rgba.format, texType,  gl.LINEAR);
+        dye = createDoubleFBO(dyeRes.width, dyeRes.height, rgba.internalFormat, rgba.format, texType,  gl.LINEAR);
 }
 
 
