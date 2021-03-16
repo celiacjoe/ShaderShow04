@@ -326,7 +326,7 @@ function initFramebuffers () {
     const rg      = ext.formatRG;
     const r       = ext.formatR;
     gl.disable(gl.BLEND);
-        dye = createDoubleFBO(canvas.width, canvas.height, rgba.internalFormat, rgba.format, texType,  gl.LINEAR);
+        dye = createDoubleFBO(canvas.width*0.5, canvas.height*0.5, rgba.internalFormat, rgba.format, texType,  gl.LINEAR);
 }
 
 
