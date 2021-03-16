@@ -257,8 +257,9 @@ const displayShaderSource = `
     precision highp float;
     precision highp sampler2D;
     varying vec2 vUv;
-    uniform sampler2D uTexture;
-    //uniform float time;
+    uniform sampler2D uTarget;
+    uniform float time;
+    float rd (float t){ return fract(sin(dot(floor(t),45.598))*7845.263);}
     float li (vec2 uv,vec2 a , vec2 b){ vec2 ua = uv-a; vec2 ba = b-a;
 float h = clamp(dot(ua,ba)/dot(ba,ba),0.,1.);
 return length(ua-ba*h);}
@@ -266,15 +267,19 @@ return length(ua-ba*h);}
     uniform vec2 resolution;
     void main () {
       vec2 uv = vUv;
-      vec2 m = mouse;
-      vec2 m2 = vec2( texture2D(uTexture,vec2(0.25,0.5)).a, texture2D(uTexture,vec2(0.75,0.5)).a);
+      float r1 = step(0.5,rd(time*0.25));
+      float r2 = step(0.5,rd(time*0.25+45.));
+      vec2 m = vec2(clamp(mouse.x,0.1,0.9),clamp(mouse.y,0.05,0.95));
+      vec2 m2 = vec2( texture2D(uTarget,vec2(0.25,1.)).a, texture2D(uTarget,vec2(0.75,1.)).a);
        float d1 = max(smoothstep(0.01,0.005,li(uv,m2-vec2(0.006,0.0),m)),smoothstep(0.01,0.005,li(uv,m2,m)));
-       float b =  texture2D(uTexture,uv).y;
+       float ch = step(uv.y,0.95)*step(0.05,uv.y)*step(uv.x,0.95)*step(0.05,uv.x);
+       float b =  texture2D(uTarget,uv).a*ch;
        float t2 = max(d1,b*0.985);
-       float vt = mix(m.x,m.y,step(0.5,uv.x));
-       float td = texture2D(uTexture,uv+vec2(0.006,0.0)).y;
-       float t4 = max(t2,td);
-        gl_FragColor = vec4(vec3(t4),vt);
+       float td = texture2D(uTarget,uv+vec2(0.006,0.0)).a*ch;
+       float t4 = max(t2,mix(td,1.-td,r1));
+       float vt = mix(t4,mix(m.x,m.y,step(0.5,uv.x)),step(0.98,uv.y));
+       vec3 c1 = mix(vec3(1.),clamp((3.*abs(1.-2.*fract(t4+time*10.+vec3(0.,-1./3.,1./3.)))-1.),0.,1.),r2)*t4*ch;
+        gl_FragColor = vec4(mix(c1,smoothstep(0.4,0.6,c1),r1),vt);
     }
 `;
 
@@ -321,7 +326,7 @@ function initFramebuffers () {
     const rg      = ext.formatRG;
     const r       = ext.formatR;
     gl.disable(gl.BLEND);
-        dye = createDoubleFBO(dyeRes.width, dyeRes.height, rgba.internalFormat, rgba.format, texType,  gl.LINEAR);
+        dye = createDoubleFBO(canvas.width, canvas.height, rgba.internalFormat, rgba.format, texType,  gl.LINEAR);
 }
 
 
@@ -439,9 +444,9 @@ function drawDisplay (target,pointer) {
 
     displayMaterial.bind();
   gl.uniform2f(displayMaterial.uniforms.resolution, canvas.width , canvas.height);
-  //gl.uniform1f(displayMaterial.uniforms.time, performance.now() / 1000);
+  gl.uniform1f(displayMaterial.uniforms.time, performance.now() / 1000);
   gl.uniform2f(displayMaterial.uniforms.mouse, pointer.texcoordX, pointer.texcoordY);
-  gl.uniform1i(displayMaterial.uniforms.uTexture, dye.read.attach(0));
+  gl.uniform1i(displayMaterial.uniforms.uTarget, dye.read.attach(0));
     blit(dye.write);
     dye.swap();
     blit(target);
