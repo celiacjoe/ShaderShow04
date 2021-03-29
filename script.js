@@ -666,7 +666,6 @@ function sons() {
   var pvx = pointers[0].prevTexcoordX;
   var py = pointers[0].texcoordY;
   var pvy = pointers[0].prevTexcoordY;
-  var ta= lerp(px,pvx,dt);var tb= lerp(py,pvy,dt);
   var fa =Math.hypot(px-pvx,py-pvy)*100.;
   var count =4 ;
   var real = new Float32Array(count);
