@@ -613,12 +613,6 @@ function correctDeltaY (delta) {
     return delta;
 }
 
-/*function wrap (value, min, max) {
-    let range = max - min;
-    if (range == 0) return min;
-    return (value - min) % range + min;
-}*/
-
 function getResolution (resolution) {
     let aspectRatio = gl.drawingBufferWidth / gl.drawingBufferHeight;
     if (aspectRatio < 1)
@@ -654,3 +648,37 @@ function hashCode (s) {
     }
     return hash;
 };
+function lerp (start, end, amt){
+  return (1-amt)*start+amt*end
+}
+function fract(tt) { return tt - Math.floor(tt); }
+window.audiocontext = window.AudioContext || webkitAudioContext;
+var context = new audiocontext();
+var osc = context.createOscillator();
+var vol = context.createGain();
+
+setInterval(sons, 1)
+
+function sons() {
+  var time = context.currentTime;
+  var dt = calcDeltaTime();
+  var px = pointers[0].texcoordX;
+  var pvx = pointers[0].prevTexcoordX;
+  var py = pointers[0].texcoordY;
+  var pvy = pointers[0].prevTexcoordY;
+  var ta= lerp(px,pvx,dt);var tb= lerp(py,pvy,dt);
+  var fa =Math.hypot(px-pvx,py-pvy)*100.;
+  var count =4 ;
+  var real = new Float32Array(count);
+  var imag = new Float32Array(count);
+  //real[0] = 0.5;
+  for (var i = 1; i < count; i++) {
+   imag[i] = (8 * Math.sin((i * Math.PI+Math.sin(time)*(px+py)*10.+time) / 2))  ;
+  }
+  var wave = context.createPeriodicWave(real, imag);
+  osc.setPeriodicWave(wave);
+  osc.frequency.value =100.;
+  vol.gain.value =Math.min(fa,1.);
+}
+osc.connect(vol).connect(context.destination);
+    osc.start();
